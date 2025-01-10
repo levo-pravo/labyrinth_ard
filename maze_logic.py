@@ -36,20 +36,19 @@ def walk():
             elif goto == 2: p_y += 1
             elif goto == 3: p_x -= 1
             see = []
-            for row in maze:
-                print(maze.index(row), p_y - 1)
-                if maze.index(row) == p_y - 1:
+            for i, row in enumerate(maze):
+                print(i, p_y)
+                if i == p_y:
                     a = []
-                    for block in row:
-                        if row.index(block) == p_x - 1:
+                    for j, block in enumerate(row):
+                        if j == p_x:
                             a.append([])
                             print('оп')
                         else: a.append(block)
                     see.append(a)
                     print('ааа')
                 else:
-                    for block in row:
-                        see.append(block)
+                    see.append(row)
             print(see)
             for row in see:
                 print("".join([symbs[str(block)] for block in row]))
