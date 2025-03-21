@@ -1,0 +1,130 @@
+
+// Размеры лабиринта
+const int MAZE_WIDTH = 10; // Уменьшено для экономии памяти
+const int MAZE_HEIGHT = 10;
+
+// Лабиринт: каждая ячейка — один байт (битовые флаги)
+uint8_t maze[MAZE_HEIGHT][MAZE_WIDTH];
+
+// Направления (битовые маски)
+const uint8_t NORTH = 0b0001;
+const uint8_t EAST  = 0b0010;
+const uint8_t SOUTH = 0b0100;
+const uint8_t WEST  = 0b1000;
+
+// Функция для выбора случайного элемента из массива
+int choice(int arr[], int size) {
+    return arr[random(size)];
+}
+
+// Инициализация лабиринта
+void initializeMaze() {
+    for (int y = 0; y < MAZE_HEIGHT; y++) {
+        for (int x = 0; x < MAZE_WIDTH; x++) {
+            maze[y][x] = 0b1111; // Все стены на месте
+        }
+    }
+}
+
+// Генерация лабиринта
+void HuntAndKill() {
+    int x_pos = random(MAZE_WIDTH);
+    int y_pos = random(MAZE_HEIGHT);
+    bool done = false;
+
+    while (!done) {
+        // Шаг 1: Поиск непосещенных соседей
+        int unvisitedNeighbours[4];
+        int count = 0;
+
+        if (y_pos > 0 && maze[y_pos - 1][x_pos] == 0b1111) {
+            unvisitedNeighbours[count++] = NORTH;
+        }
+        if (x_pos < MAZE_WIDTH - 1 && maze[y_pos][x_pos + 1] == 0b1111) {
+            unvisitedNeighbours[count++] = EAST;
+        }
+        if (y_pos < MAZE_HEIGHT - 1 && maze[y_pos + 1][x_pos] == 0b1111) {
+            unvisitedNeighbours[count++] = SOUTH;
+        }
+        if (x_pos > 0 && maze[y_pos][x_pos - 1] == 0b1111) {
+            unvisitedNeighbours[count++] = WEST;
+        }
+
+        if (count > 0) {
+            // Выбираем случайного соседа
+            int direction = choice(unvisitedNeighbours, count);
+
+            // Убираем стену между текущей и выбранной ячейкой
+            if (direction == NORTH) {
+                maze[y_pos][x_pos] &= ~NORTH; // Убираем северную стену
+                maze[y_pos - 1][x_pos] &= ~SOUTH; // Убираем южную стену у соседа
+                y_pos--;
+            } else if (direction == EAST) {
+                maze[y_pos][x_pos] &= ~EAST; // Убираем восточную стену
+                maze[y_pos][x_pos + 1] &= ~WEST; // Убираем западную стену у соседа
+                x_pos++;
+            } else if (direction == SOUTH) {
+                maze[y_pos][x_pos] &= ~SOUTH; // Убираем южную стену
+                maze[y_pos + 1][x_pos] &= ~NORTH; // Убираем северную стену у соседа
+                y_pos++;
+            } else if (direction == WEST) {
+                maze[y_pos][x_pos] &= ~WEST; // Убираем западную стену
+                maze[y_pos][x_pos - 1] &= ~EAST; // Убираем восточную стену у соседа
+                x_pos--;
+            }
+        } else {
+            // Шаг 2: Поиск новой стартовой точки
+            bool found = false;
+            for (int y = 0; y < MAZE_HEIGHT; y++) {
+                for (int x = 0; x < MAZE_WIDTH; x++) {
+                    if (maze[y][x] == 0b1111) {
+                        x_pos = x;
+                        y_pos = y;
+                        found = true;
+                        break;
+                    }
+                }
+                if (found) break;
+            }
+            if (!found) {
+                done = true;
+            }
+        }
+    }
+}
+
+// Вывод лабиринта в Serial Monitor
+void printMaze() {
+    const char* symbs[] = {
+        "┼", "├", "┴", "└", "┤", "│", "┘", "╵",
+        "┬", "┌", "─", "╶", "┐", "╷", "╴", " "
+    };
+
+    for (int y = 0; y < MAZE_HEIGHT; y++) {
+        for (int x = 0; x < MAZE_WIDTH; x++) {
+            // Преобразуем биты в индекс
+            int index = 0;
+            index |= (maze[y][x] & NORTH) ? 0 : 1 << 3;
+            index |= (maze[y][x] & EAST)  ? 0 : 1 << 2;
+            index |= (maze[y][x] & SOUTH) ? 0 : 1 << 1;
+            index |= (maze[y][x] & WEST)  ? 0 : 1 << 0;
+
+            // Выводим символ
+            Serial.print(symbs[index]);
+        }
+        Serial.println();
+    }
+}
+
+void setup() {
+    Serial.begin(9600);
+    randomSeed(analogRead(0)); // Инициализация генератора случайных чисел
+
+    initializeMaze();
+    HuntAndKill();
+    printMaze();
+}
+
+void loop() {
+    // Ничего не делаем в loop
+}

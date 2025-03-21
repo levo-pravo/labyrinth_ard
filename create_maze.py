@@ -21,7 +21,6 @@ def HuntAndKill(x, y):
                 (i == 3 and x_pos - 1 >= 0 and maze[y_pos][x_pos - 1] == [1, 1, 1, 1])
             ):
                 unvisited_neighbours.append(i)
-        print(unvisited_neighbours)
         if len(unvisited_neighbours) > 0:
             the_rook = choice(unvisited_neighbours)
             if the_rook == 0:
@@ -71,8 +70,6 @@ def HuntAndKill(x, y):
                         break
                 if found: break
             else:
-                print('все')
-                print(counter)
                 done = True
 
     symbs = {
@@ -93,13 +90,16 @@ def HuntAndKill(x, y):
         "[1, 1, 1, 0]": "╴",
         "[1, 1, 1, 1]": " ",
     }
+
+    for row in maze:
+        print(''.join([str(block) for block in row]))
+        
+    print(maze)
+    
     for row in maze:
         print("".join([symbs[str(block)] for block in row]))
-
-    #for row in maze:
-        #print(''.join([str(block) for block in row]))
 
     return maze
 
 if __name__ == "__main__":
-    HuntAndKill(20, 60)
+    HuntAndKill(20, 20)
